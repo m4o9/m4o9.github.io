@@ -1,0 +1,204 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pikachu靶场(三) CSRF | m4o9's Blog</title><meta name="keywords" content="Web渗透,笔记,csrf"><meta name="author" content="m4o9"><meta name="copyright" content="m4o9"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="CSRF 概述Cross-site request forgery 简称为“CSRF”，在CSRF的攻击场景中攻击者会伪造一个请求（这个请求一般是一个链接），然后欺骗目标用户进行点击，用户一旦点击了这个请求，整个攻击就完成了。所以CSRF攻击也成为”one click”攻击。  很多人搞不清楚CSRF的概念，甚至有时候会将其和XSS混淆,更有甚者会将其和越权问题混为一谈,这都是对原理没搞清楚导致的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pikachu靶场(三) CSRF">
+<meta property="og:url" content="http://m4o9.github.io/2021/07/27/pikachu3/index.html">
+<meta property="og:site_name" content="m4o9&#39;s Blog">
+<meta property="og:description" content="CSRF 概述Cross-site request forgery 简称为“CSRF”，在CSRF的攻击场景中攻击者会伪造一个请求（这个请求一般是一个链接），然后欺骗目标用户进行点击，用户一旦点击了这个请求，整个攻击就完成了。所以CSRF攻击也成为”one click”攻击。  很多人搞不清楚CSRF的概念，甚至有时候会将其和XSS混淆,更有甚者会将其和越权问题混为一谈,这都是对原理没搞清楚导致的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-cover.png">
+<meta property="article:published_time" content="2021-07-27T10:11:51.000Z">
+<meta property="article:modified_time" content="2021-07-27T13:01:56.004Z">
+<meta property="article:author" content="m4o9">
+<meta property="article:tag" content="Web渗透">
+<meta property="article:tag" content="笔记">
+<meta property="article:tag" content="csrf">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-cover.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://m4o9.github.io/2021/07/27/pikachu3/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Pikachu靶场(三) CSRF',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-07-27 21:01:56'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="preconnect" href="https://fonts.gstatic.com"> <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@1,300&display=swap" rel="stylesheet"><meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="m4o9's Blog" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/touxiang1.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">4</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">8</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-cover.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">m4o9's Blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Pikachu靶场(三) CSRF</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-07-27T10:11:51.000Z" title="发表于 2021-07-27 18:11:51">2021-07-27</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-07-27T13:01:56.004Z" title="更新于 2021-07-27 21:01:56">2021-07-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AE%89%E5%85%A8/">安全</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">911</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>2分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Pikachu靶场(三) CSRF"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="CSRF-概述"><a href="#CSRF-概述" class="headerlink" title="CSRF 概述"></a>CSRF 概述</h1><p>Cross-site request forgery 简称为“CSRF”，在CSRF的攻击场景中攻击者会伪造一个请求（这个请求一般是一个链接），然后欺骗目标用户进行点击，用户一旦点击了这个请求，整个攻击就完成了。所以CSRF攻击也成为”one click”攻击。  很多人搞不清楚CSRF的概念，甚至有时候会将其和XSS混淆,更有甚者会将其和越权问题混为一谈,这都是对原理没搞清楚导致的。</p>
+<p>这里列举一个场景解释一下，希望能够帮助你理解。</p>
+<img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-1.png" width="70%">
+
+<p>lucy想要在购物网站上修改购物地址，这个操作是lucy通过浏览器向后端发送了请求。这个请求里面包含了lucy的新有货地址，如果是通过GET提交的，那么会以URL传参的方式的方式将新的地址提交给后台，类似上图中的URL，相当于点了链接就能修改个人信息。</p>
+<p>如果这时候攻击者想要修改lucy的信息怎么办？<br>这时候他可以自己注册一个账号，了解一下这个修改地址时请求的发送方式，然后自己利用已知的个人信息伪造一个url，并诱导lucky在登陆情况下点击这个链接，即可达成目的。</p>
+<p><code>http://网站地址/ant/vulnerabilities/csrf/csrfget/csrf_mem_edit.php?sex=女&amp;phonenum=13856564455&amp;add=火星村111号&amp;email=lucy@pikachu.com&amp;submit=submit</code></p>
+<h1 id="CSRF-攻击条件"><a href="#CSRF-攻击条件" class="headerlink" title="CSRF 攻击条件"></a>CSRF 攻击条件</h1><ol>
+<li>目标网站没有对修改个人信息修改的请求进行防CSRF处理，导致该请求容易被伪造</li>
+</ol>
+<p>因此，判断一个网站有没有CSRF漏洞，其实就是判断对关键信息（密码等）的操作（增删改）是否容易被伪造</p>
+<ol start="2">
+<li>lucy点击伪造的请求链接时有登录状态（已经登陆了目标网站），如果lucy没有登录，那么即便lucy点击了链接也没有作用</li>
+</ol>
+<p>从CSRF的利用条件来看，CSRF的利用难度会大一些，所以CSRF对应的安全级别低一些</p>
+<h1 id="CSRF-和-XSS-的区别"><a href="#CSRF-和-XSS-的区别" class="headerlink" title="CSRF 和 XSS 的区别"></a>CSRF 和 XSS 的区别</h1><p>我们利用XSS可以达到盗取用户Cookie的目的，那么CSRF的区别在哪？</p>
+<ul>
+<li>CSRF是借助用户的权限完成攻击，攻击者并没有拿到用户的权限。目标构造修改个人信息的链接，利用lucy在登录状态下点击此链接达到修改信息的目的。</li>
+<li>XSS直接盗取了用户的权限，然后实施破坏。攻击者利用XSS盗取了目标的Cookie，登录lucy的后台，再修改相关信息。</li>
+</ul>
+<h1 id="如何确认一个目标站点是否有CSRF漏洞"><a href="#如何确认一个目标站点是否有CSRF漏洞" class="headerlink" title="如何确认一个目标站点是否有CSRF漏洞"></a>如何确认一个目标站点是否有CSRF漏洞</h1><p>对目标站点增删改查的地方进行标记，并观察逻辑，判断请求是否可以伪造。</p>
+<ul>
+<li>比如修改管理员账号时，不需要验证旧密码</li>
+<li>比如修改敏感信息不需要token验证</li>
+</ul>
+<p>确认凭证的有效期</p>
+<ul>
+<li>虽然退出或关闭了览器，但Cookie仍然有效，或者Session没有及时过期，导致CSRF攻击变得简单</li>
+</ul>
+<h1 id="CSRF-实践"><a href="#CSRF-实践" class="headerlink" title="CSRF 实践"></a>CSRF 实践</h1><h2 id="GET-型"><a href="#GET-型" class="headerlink" title="GET 型"></a>GET 型</h2><p>先登录一下lucy的账户，然后点击 <code>修改个人信息</code></p>
+<img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-2.png"/>
+
+<p>抓包看请求的url，发现是get型，修改URL中的参数内容可以任意修改</p>
+<img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-3.png" width="70%">
+
+<p>把手机号码改成1111 , 效果如下</p>
+<img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-4-1.png" width="20%">
+
+<p>所以，只需修改参数内容，然后把修改之后的url给目标点击即可</p>
+<p><code>http://网站地址/vul/csrf/csrfget/csrf_get_edit.php?sex=girl&amp;phonenum=1111&amp;add=Somewhere&amp;email=abc%40qq.com&amp;submit=submit</code></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">m4o9</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://m4o9.github.io/2021/07/27/pikachu3/">http://m4o9.github.io/2021/07/27/pikachu3/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://m4o9.github.io" target="_blank">m4o9's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Web%E6%B8%97%E9%80%8F/">Web渗透</a><a class="post-meta__tags" href="/tags/%E7%AC%94%E8%AE%B0/">笔记</a><a class="post-meta__tags" href="/tags/csrf/">csrf</a></div><div class="post_share"><div class="social-share" data-image="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-cover.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/07/27/pikachu4/"><img class="prev-cover" src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p4-cover.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Pikachu靶场(四) SQL注入</div></div></a></div><div class="next-post pull-right"><a href="/2021/07/18/pikachu2/"><img class="next-cover" src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p2-cover.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Pikachu靶场(二) XSS</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/07/18/pikachu2/" title="Pikachu靶场(二) XSS"><img class="cover" src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p2-cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-07-18</div><div class="title">Pikachu靶场(二) XSS</div></div></a></div><div><a href="/2021/07/27/pikachu4/" title="Pikachu靶场(四) SQL注入"><img class="cover" src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p4-cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-07-27</div><div class="title">Pikachu靶场(四) SQL注入</div></div></a></div><div><a href="/2021/07/15/pikachu1/" title="Pikachu靶场(一) 暴力破解"><img class="cover" src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/1-topimg.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-07-15</div><div class="title">Pikachu靶场(一) 暴力破解</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#CSRF-%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">CSRF 概述</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#CSRF-%E6%94%BB%E5%87%BB%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.</span> <span class="toc-text">CSRF 攻击条件</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#CSRF-%E5%92%8C-XSS-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">3.</span> <span class="toc-text">CSRF 和 XSS 的区别</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E7%A1%AE%E8%AE%A4%E4%B8%80%E4%B8%AA%E7%9B%AE%E6%A0%87%E7%AB%99%E7%82%B9%E6%98%AF%E5%90%A6%E6%9C%89CSRF%E6%BC%8F%E6%B4%9E"><span class="toc-number">4.</span> <span class="toc-text">如何确认一个目标站点是否有CSRF漏洞</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#CSRF-%E5%AE%9E%E8%B7%B5"><span class="toc-number">5.</span> <span class="toc-text">CSRF 实践</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#GET-%E5%9E%8B"><span class="toc-number">5.1.</span> <span class="toc-text">GET 型</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By m4o9</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-fluttering-ribbon.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
