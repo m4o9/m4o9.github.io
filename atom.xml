@@ -6,7 +6,7 @@
   <link href="http://m4o9.github.io/atom.xml" rel="self"/>
   
   <link href="http://m4o9.github.io/"/>
-  <updated>2021-07-31T09:49:01.362Z</updated>
+  <updated>2021-07-31T14:30:50.901Z</updated>
   <id>http://m4o9.github.io/</id>
   
   <author>
@@ -21,9 +21,9 @@
     <link href="http://m4o9.github.io/2021/07/31/pikachu6/"/>
     <id>http://m4o9.github.io/2021/07/31/pikachu6/</id>
     <published>2021-07-31T09:48:11.000Z</published>
-    <updated>2021-07-31T09:49:01.362Z</updated>
+    <updated>2021-07-31T14:30:50.901Z</updated>
     
-    <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>]]></content>
+    <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><h1 id="文件包含漏洞概述"><a href="#文件包含漏洞概述" class="headerlink" title="文件包含漏洞概述"></a>文件包含漏洞概述</h1><p>在 Web 后台开发中，程序员往往为了提高效率以及让代码看起来更加简洁，会使用 “包含” 函数功能。比如把一系列功能函数都写进 function.php 中，之后当某个文件需要调用的时候直接在文件头中写上一句 <?php include function.php?>就可以调用函数。</p><p>但有些时候，因为网站功能需求，会让前端用户选择需要包含的文件（或者在前端的功能中使用了“包含”功能），又由于开发人员没有对要包含的这个文件进行安全考虑，就导致攻击者可以通过修改文件的位置来让后台执行任意文件（代码）。</p><p>分为 本地文件包含 和 远程文件包含 两种。</p><h2 id="包含函数"><a href="#包含函数" class="headerlink" title="包含函数"></a>包含函数</h2><p>通过 <code>include()</code> 或者 <code>require()</code> 语句，可以将 PHP 文件的内容插入另一个 PHP 文件（在服务器执行它之前）</p><p>include 和 require 是相同的，除了错误处理方面：</p><ul><li>require 会生成致命错误（ E_COMPILE_ERROR ）并停止脚本</li><li>include 只生成警告（ E_WARNING ），并且脚本会继续</li></ul><h2 id="本地文件包含漏洞"><a href="#本地文件包含漏洞" class="headerlink" title="本地文件包含漏洞"></a>本地文件包含漏洞</h2><p>在页面提交请求之后，发现请求地址是通过URL传入的，修改至../../../../../../../etc/passwd，如果有访问权限，即可直接读取</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p6-1.png"  width="70%">]]></content>
     
     
       
@@ -66,11 +66,11 @@
     
     <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
     
-    <category term="web渗透" scheme="http://m4o9.github.io/tags/web%E6%B8%97%E9%80%8F/"/>
-    
     <category term="RCE" scheme="http://m4o9.github.io/tags/RCE/"/>
     
     <category term="命令执行" scheme="http://m4o9.github.io/tags/%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/"/>
+    
+    <category term="web渗透" scheme="http://m4o9.github.io/tags/web%E6%B8%97%E9%80%8F/"/>
     
   </entry>
   
@@ -94,11 +94,11 @@
     <category term="安全" scheme="http://m4o9.github.io/categories/%E5%AE%89%E5%85%A8/"/>
     
     
-    <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
-    
     <category term="Web渗透" scheme="http://m4o9.github.io/tags/Web%E6%B8%97%E9%80%8F/"/>
     
     <category term="sql注入" scheme="http://m4o9.github.io/tags/sql%E6%B3%A8%E5%85%A5/"/>
+    
+    <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
     
   </entry>
   
@@ -122,9 +122,9 @@
     <category term="安全" scheme="http://m4o9.github.io/categories/%E5%AE%89%E5%85%A8/"/>
     
     
-    <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
-    
     <category term="Web渗透" scheme="http://m4o9.github.io/tags/Web%E6%B8%97%E9%80%8F/"/>
+    
+    <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
     
     <category term="csrf" scheme="http://m4o9.github.io/tags/csrf/"/>
     
@@ -150,11 +150,11 @@
     <category term="安全" scheme="http://m4o9.github.io/categories/%E5%AE%89%E5%85%A8/"/>
     
     
+    <category term="Web渗透" scheme="http://m4o9.github.io/tags/Web%E6%B8%97%E9%80%8F/"/>
+    
     <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
     
     <category term="xss" scheme="http://m4o9.github.io/tags/xss/"/>
-    
-    <category term="Web渗透" scheme="http://m4o9.github.io/tags/Web%E6%B8%97%E9%80%8F/"/>
     
   </entry>
   
