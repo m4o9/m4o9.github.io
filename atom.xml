@@ -6,7 +6,7 @@
   <link href="http://m4o9.github.io/atom.xml" rel="self"/>
   
   <link href="http://m4o9.github.io/"/>
-  <updated>2021-07-27T12:15:53.055Z</updated>
+  <updated>2021-07-31T08:40:50.919Z</updated>
   <id>http://m4o9.github.io/</id>
   
   <author>
@@ -15,6 +15,36 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Pikachu靶场(五) RCE漏洞</title>
+    <link href="http://m4o9.github.io/2021/07/31/pikachu5/"/>
+    <id>http://m4o9.github.io/2021/07/31/pikachu5/</id>
+    <published>2021-07-31T08:25:58.000Z</published>
+    <updated>2021-07-31T08:40:50.919Z</updated>
+    
+    <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;link rel=&quot;stylesheet&quot; class=&quot;aplayer-secondary-style-marker&quot; href=&quot;\assets\css\APlayer.min.css&quot;&gt;&lt;script src=&quot;\assets\js\APlayer.min.js&quot; cla</summary>
+      
+    
+    
+    
+    <category term="安全" scheme="http://m4o9.github.io/categories/%E5%AE%89%E5%85%A8/"/>
+    
+    
+    <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
+    
+    <category term="RCE" scheme="http://m4o9.github.io/tags/RCE/"/>
+    
+    <category term="命令执行" scheme="http://m4o9.github.io/tags/%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C/"/>
+    
+    <category term="web渗透" scheme="http://m4o9.github.io/tags/web%E6%B8%97%E9%80%8F/"/>
+    
+  </entry>
   
   <entry>
     <title>Pikachu靶场(四) SQL注入</title>
@@ -49,9 +79,9 @@
     <link href="http://m4o9.github.io/2021/07/27/pikachu3/"/>
     <id>http://m4o9.github.io/2021/07/27/pikachu3/</id>
     <published>2021-07-27T10:11:51.000Z</published>
-    <updated>2021-07-27T13:01:56.004Z</updated>
+    <updated>2021-07-31T08:24:17.798Z</updated>
     
-    <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><h1 id="CSRF-概述"><a href="#CSRF-概述" class="headerlink" title="CSRF 概述"></a>CSRF 概述</h1><p>Cross-site request forgery 简称为“CSRF”，在CSRF的攻击场景中攻击者会伪造一个请求（这个请求一般是一个链接），然后欺骗目标用户进行点击，用户一旦点击了这个请求，整个攻击就完成了。所以CSRF攻击也成为”one click”攻击。  很多人搞不清楚CSRF的概念，甚至有时候会将其和XSS混淆,更有甚者会将其和越权问题混为一谈,这都是对原理没搞清楚导致的。</p><p>这里列举一个场景解释一下，希望能够帮助你理解。</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-1.png" width="70%"><p>lucy想要在购物网站上修改购物地址，这个操作是lucy通过浏览器向后端发送了请求。这个请求里面包含了lucy的新有货地址，如果是通过GET提交的，那么会以URL传参的方式的方式将新的地址提交给后台，类似上图中的URL，相当于点了链接就能修改个人信息。</p><p>如果这时候攻击者想要修改lucy的信息怎么办？<br>这时候他可以自己注册一个账号，了解一下这个修改地址时请求的发送方式，然后自己利用已知的个人信息伪造一个url，并诱导lucky在登陆情况下点击这个链接，即可达成目的。</p><p><code>http://网站地址/ant/vulnerabilities/csrf/csrfget/csrf_mem_edit.php?sex=女&amp;phonenum=13856564455&amp;add=火星村111号&amp;email=lucy@pikachu.com&amp;submit=submit</code></p><h1 id="CSRF-攻击条件"><a href="#CSRF-攻击条件" class="headerlink" title="CSRF 攻击条件"></a>CSRF 攻击条件</h1><ol><li>目标网站没有对修改个人信息修改的请求进行防CSRF处理，导致该请求容易被伪造</li></ol><p>因此，判断一个网站有没有CSRF漏洞，其实就是判断对关键信息（密码等）的操作（增删改）是否容易被伪造</p><ol start="2"><li>lucy点击伪造的请求链接时有登录状态（已经登陆了目标网站），如果lucy没有登录，那么即便lucy点击了链接也没有作用</li></ol><p>从CSRF的利用条件来看，CSRF的利用难度会大一些，所以CSRF对应的安全级别低一些</p><h1 id="CSRF-和-XSS-的区别"><a href="#CSRF-和-XSS-的区别" class="headerlink" title="CSRF 和 XSS 的区别"></a>CSRF 和 XSS 的区别</h1><p>我们利用XSS可以达到盗取用户Cookie的目的，那么CSRF的区别在哪？</p><ul><li>CSRF是借助用户的权限完成攻击，攻击者并没有拿到用户的权限。目标构造修改个人信息的链接，利用lucy在登录状态下点击此链接达到修改信息的目的。</li><li>XSS直接盗取了用户的权限，然后实施破坏。攻击者利用XSS盗取了目标的Cookie，登录lucy的后台，再修改相关信息。</li></ul><h1 id="如何确认一个目标站点是否有CSRF漏洞"><a href="#如何确认一个目标站点是否有CSRF漏洞" class="headerlink" title="如何确认一个目标站点是否有CSRF漏洞"></a>如何确认一个目标站点是否有CSRF漏洞</h1><p>对目标站点增删改查的地方进行标记，并观察逻辑，判断请求是否可以伪造。</p><ul><li>比如修改管理员账号时，不需要验证旧密码</li><li>比如修改敏感信息不需要token验证</li></ul><p>确认凭证的有效期</p><ul><li>虽然退出或关闭了览器，但Cookie仍然有效，或者Session没有及时过期，导致CSRF攻击变得简单</li></ul><h1 id="CSRF-实践"><a href="#CSRF-实践" class="headerlink" title="CSRF 实践"></a>CSRF 实践</h1><h2 id="GET-型"><a href="#GET-型" class="headerlink" title="GET 型"></a>GET 型</h2><p>先登录一下lucy的账户，然后点击 <code>修改个人信息</code></p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-2.png"/><p>抓包看请求的url，发现是get型，修改URL中的参数内容可以任意修改</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-3.png" width="70%"><p>把手机号码改成1111 , 效果如下</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-4-1.png" width="20%"><p>所以，只需修改参数内容，然后把修改之后的url给目标点击即可</p><p><code>http://网站地址/vul/csrf/csrfget/csrf_get_edit.php?sex=girl&amp;phonenum=1111&amp;add=Somewhere&amp;email=abc%40qq.com&amp;submit=submit</code></p>]]></content>
+    <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><h1 id="CSRF-概述"><a href="#CSRF-概述" class="headerlink" title="CSRF 概述"></a>CSRF 概述</h1><p>Cross-site request forgery 简称为“CSRF”，在CSRF的攻击场景中攻击者会伪造一个请求（这个请求一般是一个链接），然后欺骗目标用户进行点击，用户一旦点击了这个请求，整个攻击就完成了。所以CSRF攻击也成为”one click”攻击。  很多人搞不清楚CSRF的概念，甚至有时候会将其和XSS混淆,更有甚者会将其和越权问题混为一谈,这都是对原理没搞清楚导致的。</p><p>这里列举一个场景解释一下，希望能够帮助你理解。</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-1.png" width="70%"><p>lucy想要在购物网站上修改购物地址，这个操作是lucy通过浏览器向后端发送了请求。这个请求里面包含了lucy的新有货地址，如果是通过GET提交的，那么会以URL传参的方式的方式将新的地址提交给后台，类似上图中的URL，相当于点了链接就能修改个人信息。</p><p>如果这时候攻击者想要修改lucy的信息怎么办？<br>这时候他可以自己注册一个账号，了解一下这个修改地址时请求的发送方式，然后自己利用已知的个人信息伪造一个url，并诱导lucky在登陆情况下点击这个链接，即可达成目的。</p><p><code>http://网站地址/ant/vulnerabilities/csrf/csrfget/csrf_mem_edit.php?sex=女&amp;phonenum=13856564455&amp;add=火星村111号&amp;email=lucy@pikachu.com&amp;submit=submit</code></p><h1 id="CSRF-攻击条件"><a href="#CSRF-攻击条件" class="headerlink" title="CSRF 攻击条件"></a>CSRF 攻击条件</h1><ol><li>目标网站没有对修改个人信息修改的请求进行防CSRF处理，导致该请求容易被伪造</li></ol><p>因此，判断一个网站有没有CSRF漏洞，其实就是判断对关键信息（密码等）的操作（增删改）是否容易被伪造</p><ol start="2"><li>lucy点击伪造的请求链接时有登录状态（已经登陆了目标网站），如果lucy没有登录，那么即便lucy点击了链接也没有作用</li></ol><p>从CSRF的利用条件来看，CSRF的利用难度会大一些，所以CSRF对应的安全级别低一些</p><h1 id="CSRF-和-XSS-的区别"><a href="#CSRF-和-XSS-的区别" class="headerlink" title="CSRF 和 XSS 的区别"></a>CSRF 和 XSS 的区别</h1><p>我们利用XSS可以达到盗取用户Cookie的目的，那么CSRF的区别在哪？</p><ul><li>CSRF是借助用户的权限完成攻击，攻击者并没有拿到用户的权限。目标构造修改个人信息的链接，利用lucy在登录状态下点击此链接达到修改信息的目的。</li><li>XSS直接盗取了用户的权限，然后实施破坏。攻击者利用XSS盗取了目标的Cookie，登录lucy的后台，再修改相关信息。</li></ul><h1 id="如何确认一个目标站点是否有CSRF漏洞"><a href="#如何确认一个目标站点是否有CSRF漏洞" class="headerlink" title="如何确认一个目标站点是否有CSRF漏洞"></a>如何确认一个目标站点是否有CSRF漏洞</h1><p>对目标站点增删改查的地方进行标记，并观察逻辑，判断请求是否可以伪造。</p><ul><li>比如修改管理员账号时，不需要验证旧密码</li><li>比如修改敏感信息不需要token验证</li></ul><p>确认凭证的有效期</p><ul><li>虽然退出或关闭了览器，但Cookie仍然有效，或者Session没有及时过期，导致CSRF攻击变得简单</li></ul><h1 id="CSRF-实践"><a href="#CSRF-实践" class="headerlink" title="CSRF 实践"></a>CSRF 实践</h1><h2 id="GET-型"><a href="#GET-型" class="headerlink" title="GET 型"></a>GET 型</h2><p>先登录一下lucy的账户，然后点击 <code>修改个人信息</code></p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-2.png"/><p>抓包看请求的url，发现是get型，修改URL中的参数内容可以任意修改</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-3.png" width="70%"><p>把手机号码改成1111 , 效果如下</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-4-1.png" width="20%"><p>所以，只需修改参数内容，然后把修改之后的url给目标点击即可</p><p><code>http://网站地址/vul/csrf/csrfget/csrf_get_edit.php?sex=girl&amp;phonenum=1111&amp;add=Somewhere&amp;email=abc%40qq.com&amp;submit=submit</code></p><h2 id="POST-型"><a href="#POST-型" class="headerlink" title="POST 型"></a>POST 型</h2><p>如果数据是通过POST表单上传的，我们可以自己先截取一个包，然后在burp中生成一个<code>CSRF POC</code>，将生成的POC放到自己的攻击后台，目标用户点击之后即可触发csrf</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-5.png" width="50%"><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p3-6.png" width="50%"><h1 id="CSRF中的token验证"><a href="#CSRF中的token验证" class="headerlink" title="CSRF中的token验证"></a>CSRF中的token验证</h1><p>CSRF的主要问题是敏感操作容易被伪造，我们可以加入Token让请求不容易被伪造</p><p>每次请求，都增加一个随机码（需要够随机，不容易被伪造），后台每次对这个随机码进行验证</p><blockquote><p>在爆破中token验证可以被绕过</p><p>但是对于csrf来说，目标用户和攻击者的token是不一样的，对于攻击者来说，目标的token极难获取，所以csrf漏洞可以用token有效防护</p></blockquote><h1 id="常见防护措施"><a href="#常见防护措施" class="headerlink" title="常见防护措施"></a>常见防护措施</h1><ul><li><p>增加Token验证（常用做法）<br>对关键操作增加Token参数，token必须随机，每次都不一样</p></li><li><p>关于安全的会话管理（避免会话被利用）<br>不要在客户端保存敏感信息（比如身份验证信息）<br>退出、关闭浏览器时的会话过期机制<br>设置会话过机制，比如15分钟无操作，则自动登录超时</p></li><li><p>访问控制安全管理<br>敏感信息的修改时需要身份进行二次认证，比如修改账号密码，需要判断旧密码<br>敏感信息的修改使用POST，而不是GET<br>通过HTTP头部中的REFERER来限制原页面</p></li><li><p>增加验证码<br>一般在登录（防暴力破解），也可以用在其他重要信息操作的表单中（需要考虑可用性）</p></li></ul>]]></content>
     
     
       
@@ -64,11 +94,11 @@
     <category term="安全" scheme="http://m4o9.github.io/categories/%E5%AE%89%E5%85%A8/"/>
     
     
+    <category term="csrf" scheme="http://m4o9.github.io/tags/csrf/"/>
+    
     <category term="Web渗透" scheme="http://m4o9.github.io/tags/Web%E6%B8%97%E9%80%8F/"/>
     
     <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
-    
-    <category term="csrf" scheme="http://m4o9.github.io/tags/csrf/"/>
     
   </entry>
   
