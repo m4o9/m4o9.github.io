@@ -6,7 +6,7 @@
   <link href="http://m4o9.github.io/atom.xml" rel="self"/>
   
   <link href="http://m4o9.github.io/"/>
-  <updated>2021-07-31T15:47:43.237Z</updated>
+  <updated>2021-08-02T16:23:02.910Z</updated>
   <id>http://m4o9.github.io/</id>
   
   <author>
@@ -15,6 +15,62 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Pikachu靶场(八) 越权漏洞</title>
+    <link href="http://m4o9.github.io/2021/08/03/pikachu8/"/>
+    <id>http://m4o9.github.io/2021/08/03/pikachu8/</id>
+    <published>2021-08-02T16:12:08.000Z</published>
+    <updated>2021-08-02T16:23:02.910Z</updated>
+    
+    <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;link rel=&quot;stylesheet&quot; class=&quot;aplayer-secondary-style-marker&quot; href=&quot;\assets\css\APlayer.min.css&quot;&gt;&lt;script src=&quot;\assets\js\APlayer.min.js&quot; cla</summary>
+      
+    
+    
+    
+    <category term="安全" scheme="http://m4o9.github.io/categories/%E5%AE%89%E5%85%A8/"/>
+    
+    
+    <category term="Web渗透" scheme="http://m4o9.github.io/tags/Web%E6%B8%97%E9%80%8F/"/>
+    
+    <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
+    
+    <category term="越权" scheme="http://m4o9.github.io/tags/%E8%B6%8A%E6%9D%83/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Pikachu靶场(七) 不安全的文件上传和下载</title>
+    <link href="http://m4o9.github.io/2021/08/01/pikachu7/"/>
+    <id>http://m4o9.github.io/2021/08/01/pikachu7/</id>
+    <published>2021-08-01T00:39:15.000Z</published>
+    <updated>2021-08-02T16:13:07.648Z</updated>
+    
+    <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><h1 id="不安全的文件下载"><a href="#不安全的文件下载" class="headerlink" title="不安全的文件下载"></a>不安全的文件下载</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>文件下载功能在很多web系统上都会出现，一般我们当点击下载链接，便会向后台发送一个下载请求，一般这个请求会包含一个需要下载的文件名称，后台在收到请求后 会开始执行下载代码，将该文件名对应的文件response给浏览器，从而完成下载。 如果后台在收到请求的文件名后,将其直接拼进下载文件的路径中而不对其进行安全判断的话，则可能会引发不安全的文件下载漏洞。<br>此时如果攻击者提交的不是一个程序预期的的文件名，而是一个精心构造的路径(比如../../../etc/passwd),则很有可能会直接将该指定的文件下载下来。 从而导致后台敏感信息(密码文件、源代码等)被下载。所以，在设计文件下载功能时，如果下载的目标文件是由前端传进来的，则一定要对传进来的文件进行安全考虑。</p><p><strong>切记：所有与前端交互的数据都是不安全的，不能掉以轻心！</strong></p><h2 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h2><p>这里是一个可以下载图片的页面，点击名字下载对应的图片，此时发起的请求url是：<code>http://网站地址/vul/unsafedownload/execdownload.php?filename=kb.png</code>, 发现下载文件的文件名在url中，修改 <code>filename</code> 为 <code>../../../../../../../../../../etc/passwd</code> 即可成功下载</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p7-1.png" width="56%"><hr><p>通过后台代码可以发现，漏洞产生的原因是：直接对传入的filename进行了文件路径的拼接，没有做任何的过滤</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p7-2.png"/><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p7-3.png"/><h2 id="防范措施"><a href="#防范措施" class="headerlink" title="防范措施"></a>防范措施</h2><ul><li>对传入的文件名进行严格的过滤和限定</li><li>对文件下载的目录进行严格的过滤</li></ul><h1 id="不安全的文件上传"><a href="#不安全的文件上传" class="headerlink" title="不安全的文件上传"></a>不安全的文件上传</h1><h2 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h2><p>因为业务功能需要，很多 Web 站点都有文件上传的接口，比如：</p><p>注册时上传头像图片（比如jpg，png，gif等）<br>上传文件附件（doc，xls等）<br>而在后台开发时，并没有对上传的文件进行安全考虑，或者采用了有缺陷的措施，导致攻击者可以通过一些手段绕过安全措施从而上传一些恶意文件（如：一句话木马）</p><p>从而通过对该恶意文件的访问来控制整个 Web 后台</p><h2 id="测试流程"><a href="#测试流程" class="headerlink" title="测试流程"></a>测试流程</h2><ul><li>对文件上传的地方按照要求上传文件，查看返回结果（路径，提示等）</li><li>尝试上传不同类型的 “ 恶意 ” 文件，比如 xx.php 文件，分析结果</li><li>查看 html 源码，看是否通过 js 在前端做了限制，可以绕过</li><li>尝试使用不同方式进行绕过：黑白名单绕过 / MIME类型绕过 / 目录0x00截断绕过等</li><li>猜测或者结合其他漏洞（比如敏感信息泄露等）得到木马路径，连接测试</li></ul><h2 id="客户端校验"><a href="#客户端校验" class="headerlink" title="客户端校验"></a>客户端校验</h2><p>看一下功能点，F12查看前端代码发现上传文件处调用了一个<code>checkFileExt</code>的函数</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p7-5.png" width="90%"><p>这个函数作用就是判断文件后缀名是否是jpg或png或gif</p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">checkFileExt</span>(<span class="params">filename</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> flag = <span class="literal">false</span>; <span class="comment">//状态</span></span><br><span class="line">    <span class="keyword">var</span> arr = [<span class="string">&quot;jpg&quot;</span>, <span class="string">&quot;png&quot;</span>, <span class="string">&quot;gif&quot;</span>];</span><br><span class="line">    <span class="comment">//取出上传文件的扩展名</span></span><br><span class="line">    <span class="keyword">var</span> index = filename.lastIndexOf(<span class="string">&quot;.&quot;</span>);</span><br><span class="line">    <span class="keyword">var</span> ext = filename.substr(index + <span class="number">1</span>);</span><br><span class="line">    <span class="comment">//比较</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (ext == arr[i]) &#123;</span><br><span class="line">            flag = <span class="literal">true</span>; <span class="comment">//一旦找到合适的，立即退出循环</span></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//条件判断</span></span><br><span class="line">    <span class="keyword">if</span> (!flag) &#123;</span><br><span class="line">        alert(<span class="string">&quot;上传的文件不符合要求，请重新选择！&quot;</span>);</span><br><span class="line">        location.reload(<span class="literal">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p><strong>显然，前端处对我们的功能限制是很好绕过的，直接把onchange中的调用删掉即可上传</strong></p><p>注意路径是 <code>uploads/1.php</code> , 所以 <code>http://网站地址/vul/unsafeupload/uploads/1.php</code> 就是我们上传的一句话木马地址</p><p><strong>实际情况中这个路径可能需要我们去猜测</strong></p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p7-6.png" width="70%"><h2 id="服务端校验"><a href="#服务端校验" class="headerlink" title="服务端校验"></a>服务端校验</h2><h3 id="MIME"><a href="#MIME" class="headerlink" title="MIME"></a>MIME</h3><p>MIME（Multipurpose Internet Mail Extensions）多用途互联网邮件扩展类型。是设定某种扩展名的文件用一种应用程序来打开的方式类型，当该扩展名文件被访问时，浏览器会自动使用指定应用程序来打开。多用于指定一些客户端自定义的文件名，以及一些媒体文件打开方式。</p><p>每个MIME类型由两部分组成，前面是数据的大类别，例如声音audio、图象image等，后面定义具体的种类。常见的 MIME 类型，比如：</p><ul><li>超文本标记语言：.html，.html text.html</li><li>普通文件：.txt text/plain</li><li>RTF文件：.rtf application/rtf</li><li>GIF图形：.gif image/gif</li><li>JPEG图形：.jpeg，.jpg image/jpeg</li></ul><p><strong>$_FILES()函数</strong></p><p>它从浏览器的HTTP头里获取 Content-Type ，这个 Content-Type 前端用户是可以控制的</p><p>通过使用 PHP 的全局数组 $_FILES，你可以从客户计算机向远程服务器上传文件</p><p>第一个参数是表单的 input name，第二个下标可以是 “name”，“type”，“size”，“tmp_name” 或 “error”，就像这样：</p><p><code>$_FILES[&#39;file&#39;][&#39;name&#39;]</code>：被上传文件的名称<br><code>$_FILES[&#39;file&#39;][&#39;type&#39;]</code>：被上传文件的类型<br><code>$_FILES[&#39;file&#39;][&#39;size&#39;]</code>：被上传文件的大小<br><code>$_FILES[&#39;file&#39;][&#39;tmp_name&#39;]</code>：存储在服务器的文件的临时副本的名称<br><code>$_FILES[&#39;file&#39;][&#39;error&#39;]</code>：由文件上传导致的错误代码</p><p><strong>看一下服务端处理文件上传的代码</strong></p><p>文件上传时调用了一个 <code>upload_sick</code> 函数，来看一下</p><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$html</span>=<span class="string">&#x27;&#x27;</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;submit&#x27;</span>]))&#123;</span><br><span class="line">    <span class="variable">$mime</span>=<span class="keyword">array</span>(<span class="string">&#x27;image/jpg&#x27;</span>,<span class="string">&#x27;image/jpeg&#x27;</span>,<span class="string">&#x27;image/png&#x27;</span>);<span class="comment">//指定MIME类型,这里只是对MIME类型做了判断。</span></span><br><span class="line">    <span class="variable">$save_path</span>=<span class="string">&#x27;uploads&#x27;</span>;<span class="comment">//指定在当前目录建立一个目录</span></span><br><span class="line">    <span class="variable">$upload</span>=upload_sick(<span class="string">&#x27;uploadfile&#x27;</span>,<span class="variable">$mime</span>,<span class="variable">$save_path</span>);<span class="comment">//调用函数</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="variable">$upload</span>[<span class="string">&#x27;return&#x27;</span>])&#123;</span><br><span class="line">        <span class="variable">$html</span>.=<span class="string">&quot;&lt;p class=&#x27;notice&#x27;&gt;文件上传成功&lt;/p&gt;&lt;p class=&#x27;notice&#x27;&gt;文件保存的路径为：<span class="subst">&#123;$upload[&#x27;new_path&#x27;]&#125;</span>&lt;/p&gt;&quot;</span>;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="variable">$html</span>.=<span class="string">&quot;&lt;p class=notice&gt;<span class="subst">&#123;$upload[&#x27;error&#x27;]&#125;</span>&lt;/p&gt;&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>这个函数中，在处理文件类型时，使用了$_FILES()函数，这意味着我们可以通过修改请求包来欺骗服务端</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p7-7.png" width="70%"><p>上传一个一句话页面，把 <code>Content-Type</code> 改成 <code>image/jpeg</code>, 成功</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p7-8.png" width="70%"><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p7-9.png" width="70%"><h2 id="getimagesize-类型验证"><a href="#getimagesize-类型验证" class="headerlink" title="getimagesize() 类型验证"></a>getimagesize() 类型验证</h2><p>getimagesize() 返回结果中有文件大小和文件类型，如果用这个函数来获取类型，从而判断是否是图片的话，会存在问题。</p><p><strong>它读取目标文件的 16 进制的头几个字符串，看符不符合图片要求，固定的图片文件前面几个字符串是一样的</strong></p><p>但是图片头可以被伪造，因此还是可以被绕过</p><p>我们可以用 xxd 这个命令查看图片的第一行</p><img src="https://gitee.com/TyRantXx/imgs/raw/master/imgs/p7-10.png"/><p>我们可以尝试上传一个包含恶意代码的图片，制作方法如下</p><ul><li>方法1：CMD命令伪造头部GIF89A：copy /b test.png + muma.php cccc.png</li><li>方法2：使用GIMP（开源的图片修改软件），通过增加备注，写入执行命令</li></ul><p>上传成功后，我们直接访问这个图片，恶意代码是不会被执行的。我们可以结合本地文件包含漏洞进一步利用，猜测上传图片所在的位置</p><h1 id="防范措施-1"><a href="#防范措施-1" class="headerlink" title="防范措施"></a>防范措施</h1><ul><li>不要在前端使用 JS 实施上传限制策略</li><li>通过服务端对上传文件进行限制：<ul><li>进行多条件组合检查：比如文件的大小，路径，扩展名，文+件类型，文件完整性</li><li>对上传的文件在服务器上存储时进行重命名（制定合理的命名规则）</li><li>对服务器端上传的目录进行权限控制（比如只读），限制执行权限带来的危害</li></ul></li></ul>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;link rel=&quot;stylesheet&quot; class=&quot;aplayer-secondary-style-marker&quot; href=&quot;\assets\css\APlayer.min.css&quot;&gt;&lt;script src=&quot;\assets\js\APlayer.min.js&quot; cla</summary>
+      
+    
+    
+    
+    <category term="安全" scheme="http://m4o9.github.io/categories/%E5%AE%89%E5%85%A8/"/>
+    
+    
+    <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
+    
+    <category term="web渗透" scheme="http://m4o9.github.io/tags/web%E6%B8%97%E9%80%8F/"/>
+    
+    <category term="文件上传和下载" scheme="http://m4o9.github.io/tags/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E5%92%8C%E4%B8%8B%E8%BD%BD/"/>
+    
+  </entry>
   
   <entry>
     <title>Pikachu靶场(六) 文件包含漏洞</title>
@@ -124,9 +180,9 @@
     
     <category term="Web渗透" scheme="http://m4o9.github.io/tags/Web%E6%B8%97%E9%80%8F/"/>
     
-    <category term="csrf" scheme="http://m4o9.github.io/tags/csrf/"/>
-    
     <category term="笔记" scheme="http://m4o9.github.io/tags/%E7%AC%94%E8%AE%B0/"/>
+    
+    <category term="csrf" scheme="http://m4o9.github.io/tags/csrf/"/>
     
   </entry>
   
