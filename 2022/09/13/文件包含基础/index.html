@@ -13,11 +13,13 @@
 <meta property="og:site_name" content="m4o9&#39;s blog">
 <meta property="og:description" content="常见函数 include()：仅包含, 包含失败不影响执行 require()：必须包含成功，有报错会后面不执行 include_once()：包含一次 ，再次包含不重复包含 require_once()：包含一次 ，再次包含不重复包含  伪协议利用常见伪协议12345678910111213141516file:&#x2F;&#x2F;&#x2F;etc&#x2F;passwdfile:&#x2F;&#x2F;..&#x2F;..&#x2F;..&#x2F;f1agfile:&#x2F;&#x2F;C:">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://my-picgo-bucket.oss-cn-nanjing.aliyuncs.com/img/image-20220915001356512.png">
 <meta property="article:published_time" content="2022-09-13T14:40:59.000Z">
-<meta property="article:modified_time" content="2022-09-14T15:39:11.083Z">
+<meta property="article:modified_time" content="2022-09-14T16:14:41.839Z">
 <meta property="article:author" content="m4o9">
 <meta property="article:tag" content="文件包含">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://my-picgo-bucket.oss-cn-nanjing.aliyuncs.com/img/image-20220915001356512.png">
     
     
       
@@ -132,7 +134,7 @@
       
         <time datetime="2022-09-13T14:40:59.000Z" itemprop="datePublished">2022-09-13</time>
         
-        (Updated: <time datetime="2022-09-14T15:39:11.083Z" itemprop="dateModified">2022-09-14</time>)
+        (Updated: <time datetime="2022-09-14T16:14:41.839Z" itemprop="dateModified">2022-09-15</time>)
         
       
     </div>
@@ -190,6 +192,9 @@
 <p>由于包含需要知道包含的文件名。一种方法是进行暴力猜解，linux下使用的随机函数有缺陷，而window下只有65535中不同的文件名，所以这个方法是可行的。</p>
 <p>另一种方法是配合phpinfo页面的php variables，可以直接获取到上传文件的存储路径和临时文件名，直接包含即可。这个方法可以参考</p>
 <p><a target="_blank" rel="noopener" href="https://insomniasec.com/downloads/publications/LFI%20With%20PHPInfo%20Assistance.pdf">LFI With PHPInfo Assistance</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">利用方法简述</span><br><span class="line">在给PHP发送POST数据包时，如果数据包里包含文件区块，无论你访问的代码中有没有处理文件上传的逻辑，PHP都会将这个文件保存成一个临时文件（通常是/tmp/php[6个随机字符]），文件名可以在$_FILES变量中找到。这个临时文件，在请求结束后就会被删除。</span><br><span class="line"></span><br><span class="line">同时，因为phpinfo页面会将当前请求上下文中所有变量都打印出来，所以我们如果向phpinfo页面发送包含文件区块的数据包，则即可在返回包里找到$_FILES变量的内容，自然也包含临时文件名。</span><br><span class="line"></span><br><span class="line">在文件包含漏洞找不到可利用的文件时，即可利用这个方法，找到临时文件名，然后包含之。</span><br><span class="line"></span><br><span class="line">但文件包含漏洞和phpinfo页面通常是两个页面，理论上我们需要先发送数据包给phpinfo页面，然后从返回页面中匹配出临时文件名，再将这个文件名发送给文件包含漏洞页面，进行getshell。在第一个请求结束时，临时文件就被删除了，第二个请求自然也就无法进行包含。</span><br><span class="line"></span><br><span class="line">这个时候就需要用到条件竞争，具体流程如下：</span><br><span class="line"></span><br><span class="line">发送包含了webshell的上传数据包给phpinfo页面，这个数据包的header、get等位置需要塞满垃圾数据</span><br><span class="line">因为phpinfo页面会将所有数据都打印出来，1中的垃圾数据会将整个phpinfo页面撑得非常大</span><br><span class="line">php默认的输出缓冲区大小为4096，可以理解为php每次返回4096个字节给socket连接</span><br><span class="line">所以，我们直接操作原生socket，每次读取4096个字节。只要读取到的字符里包含临时文件名，就立即发送第二个数据包</span><br><span class="line">此时，第一个数据包的socket连接实际上还没结束，因为php还在继续每次输出4096个字节，所以临时文件此时还没有删除</span><br><span class="line">利用这个时间差，第二个数据包，也就是文件包含漏洞的利用，即可成功包含临时文件，最终getshell</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://my-picgo-bucket.oss-cn-nanjing.aliyuncs.com/img/image-20220915001356512.png" alt="image-20220915001356512"></p>
 <h3 id="包含-x2F-pros-x2F-self-x2F-environ"><a href="#包含-x2F-pros-x2F-self-x2F-environ" class="headerlink" title="包含&#x2F;pros&#x2F;self&#x2F;environ"></a>包含&#x2F;pros&#x2F;self&#x2F;environ</h3><p>proc&#x2F;self&#x2F;environ中会保存user-agent头，如果在user-agent中插入php代码，则php代码会被写入到environ中，之后再包含它，即可。</p>
 <p>利用条件：</p>
 <ul>
